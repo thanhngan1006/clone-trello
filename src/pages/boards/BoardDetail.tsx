@@ -38,7 +38,10 @@ export const BoardDetail = () => {
             placeholder="Nhập tên danh sách"
           />
           <div className="flex items-center gap-2">
-            <Button className="w-auto" onClick={() => handleAddList(boardId)}>
+            <Button
+              className="w-auto flex items-center"
+              onClick={() => handleAddList(boardId)}
+            >
               Thêm danh sách
             </Button>
             <Button className="w-auto" onClick={handleCloseForm}>

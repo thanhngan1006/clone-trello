@@ -1,16 +1,8 @@
 import { FaRegStar } from "react-icons/fa";
 import { BiSolidGroup } from "react-icons/bi";
 import { useParams } from "react-router-dom";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot,
-} from "firebase/firestore";
-import { useCallback, useContext, useEffect } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useContext, useEffect } from "react";
 import { db } from "../lib/firebase";
 import {
   Board,

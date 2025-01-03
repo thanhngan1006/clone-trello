@@ -8,6 +8,8 @@ import {
 } from "react";
 
 import { db } from "../lib/firebase";
+import { useNavigate } from "react-router-dom";
+
 import {
   collection,
   addDoc,
@@ -38,11 +40,19 @@ type BoardManagementContextProps = {
   setBoardData: Dispatch<SetStateAction<Board | null>>;
   handleOpenFormToAddBoard: (formName: string) => void;
   handleAddBoard: () => void;
-  handleDeleteBoard: (id: string) => void;
-  handleOpenEdit: (id: string) => void;
+  handleDeleteBoard: (
+    id: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  handleOpenEdit: (id: string, e: React.MouseEvent<HTMLButtonElement>) => void;
   handleCloseEdit: () => void;
-  handleUpdateBoard: (id: string, boardName: string) => void;
+  handleUpdateBoard: (
+    id: string,
+    boardName: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
   fetchBoard: () => void;
+  navigateToBoardFunction: (board: Board) => void;
 };
 
 export const BoardManagementContext = createContext<
@@ -56,6 +66,8 @@ type BoardManagementProviderProps = {
 export const BoardManagementProvider = ({
   children,
 }: BoardManagementProviderProps) => {
+  const navigate = useNavigate();
+
   const [listBoard, setListBoard] = useState<Board[]>([]);
   const [boardData, setBoardData] = useState<Board | null>(null);
   const [boardName, setBoardName] = useState("");
@@ -99,18 +111,27 @@ export const BoardManagementProvider = ({
     }
   }, []);
 
-  const handleDeleteBoard = useCallback(async (id: string) => {
-    const taskDocRef = doc(db, "boards", id);
-    try {
-      await deleteDoc(taskDocRef);
-      setListBoard((items) => items.filter((item) => item.id !== id));
-    } catch (err) {
-      alert(err);
-    }
-  }, []);
+  const handleDeleteBoard = useCallback(
+    async (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const taskDocRef = doc(db, "boards", id);
+
+      try {
+        await deleteDoc(taskDocRef);
+        setListBoard((items) => items.filter((item) => item.id !== id));
+      } catch (err) {
+        alert(err);
+      }
+    },
+    []
+  );
 
   const handleOpenEdit = useCallback(
-    (id: string) => {
+    (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
       setactiveEdit(activeEdit === id ? null : id);
       setNewBoardName("");
     },
@@ -123,12 +144,18 @@ export const BoardManagementProvider = ({
   }, []);
 
   const handleUpdateBoard = useCallback(
-    async (id: string, boardNameUpdate: string) => {
+    async (
+      id: string,
+      boardNameUpdate: string,
+      e: React.MouseEvent<HTMLButtonElement>
+    ) => {
+      e.preventDefault();
       const taskDocRef = doc(db, "boards", id);
       try {
         await updateDoc(taskDocRef, {
           boardName: boardNameUpdate,
         });
+
         setListBoard((prevList) =>
           prevList.map((item) =>
             item.id === id ? { ...item, boardName: boardNameUpdate } : item
@@ -143,6 +170,13 @@ export const BoardManagementProvider = ({
     },
     []
   );
+
+  const navigateToBoardFunction = (board: Board) => {
+    if (activeEdit) {
+      return;
+    }
+    navigate(`/b/${board.id}/${board.boardName}`);
+  };
 
   // const handleSearchBoard = useCallback(() => {
   //   const results = listBoard.filter((board) =>
@@ -174,6 +208,7 @@ export const BoardManagementProvider = ({
         setSearchWord,
         boardData,
         setBoardData,
+        navigateToBoardFunction,
       }}
     >
       {children}

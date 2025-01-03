@@ -8,9 +8,11 @@ import { FaEdit } from "react-icons/fa";
 
 import { AccountLinkList } from "./AccountLinkList";
 import { Button } from "./Button";
-import { BoardManagementContext } from "../context/BoardManagementContext";
+import {
+  Board,
+  BoardManagementContext,
+} from "../context/BoardManagementContext";
 import { CreateBoardForm } from "./CreateBoardForm";
-import { Link } from "react-router-dom";
 
 type SidebarWorspaceData = {
   title: string;
@@ -48,6 +50,7 @@ export const SidebarWorkspace = ({
     setNewBoardName,
     handleUpdateBoard,
     fetchBoard,
+    navigateToBoardFunction,
   } = context;
 
   useEffect(() => {
@@ -115,9 +118,9 @@ export const SidebarWorkspace = ({
             <ul className="flex flex-col gap-3">
               {listBoard?.map((item) => (
                 <li key={item.id}>
-                  <Link
-                    to={`/b/${item.id}/${item.boardName}`}
-                    className="flex items-center justify-between px-3 p-1.5 border border-gray-300"
+                  <button
+                    onClick={() => navigateToBoardFunction(item)}
+                    className="flex items-center justify-between px-3 p-1.5 border border-gray-300 w-full"
                   >
                     {activeEdit === item.id ? (
                       <input
@@ -138,8 +141,8 @@ export const SidebarWorkspace = ({
                         <>
                           <Button
                             className="w-auto"
-                            onClick={() =>
-                              handleUpdateBoard(item.id, newBoardName)
+                            onClick={(e) =>
+                              handleUpdateBoard(item.id, newBoardName, e)
                             }
                           >
                             <TiTickOutline />
@@ -155,20 +158,20 @@ export const SidebarWorkspace = ({
                         <>
                           <Button
                             className="w-auto"
-                            onClick={() => handleOpenEdit(item.id)}
+                            onClick={(e) => handleOpenEdit(item.id, e)}
                           >
                             <FaEdit />
                           </Button>
                           <Button
                             className="w-auto"
-                            onClick={() => handleDeleteBoard(item.id)}
+                            onClick={(e) => handleDeleteBoard(item.id, e)}
                           >
                             <FaRegTrashAlt />
                           </Button>
                         </>
                       )}
                     </div>
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>

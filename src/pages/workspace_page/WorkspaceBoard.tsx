@@ -37,6 +37,7 @@ export const WorkspaceBoard = () => {
     sortBy,
     searchWord,
     setSearchWord,
+    navigateToBoardFunction,
   } = context;
 
   const [filteredAndSortedBoards, setFilteredAndSortedBoards] = useState<
@@ -202,9 +203,9 @@ export const WorkspaceBoard = () => {
       <ul className="flex gap-2 flex-wrap">
         {filteredAndSortedBoards.map((item) => (
           <li key={item.id}>
-            <Link
-              to={`/b/${item.id}/${item.boardName}`}
-              className="bg-gray-200 w-72 h-32 font-thin hover:bg-gray-300 flex flex-col p-3 rounded-md"
+            <button
+              onClick={() => navigateToBoardFunction(item)}
+              className="flex justify-between px-3 p-2 border border-gray-300 rounded-md w-56 h-28"
             >
               {activeEdit === item.id ? (
                 <input
@@ -225,7 +226,10 @@ export const WorkspaceBoard = () => {
                   <>
                     <Button
                       className="w-auto"
-                      onClick={() => handleUpdateBoard(item.id, newBoardName)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleUpdateBoard(item.id, newBoardName, e);
+                      }}
                     >
                       <TiTickOutline />
                     </Button>
@@ -240,20 +244,23 @@ export const WorkspaceBoard = () => {
                   <>
                     <Button
                       className="w-auto"
-                      onClick={() => handleOpenEdit(item.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOpenEdit(item.id, e);
+                      }}
                     >
                       <FaEdit />
                     </Button>
                     <Button
                       className="w-auto"
-                      onClick={() => handleDeleteBoard(item.id)}
+                      onClick={(e) => handleDeleteBoard(item.id, e)}
                     >
                       <FaRegTrashAlt />
                     </Button>
                   </>
                 )}
               </div>
-            </Link>
+            </button>
           </li>
         ))}
       </ul>
