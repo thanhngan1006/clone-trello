@@ -5,11 +5,11 @@ import { LuTableProperties } from "react-icons/lu";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
 import { Outlet } from "react-router-dom";
-import { NavProvider } from "../../context/NavContext";
-import Navbar from "../../components/Navbar";
-import { SidebarWorkspace } from "../../components/SidebarWorkspace";
-import { BoardManagementProvider } from "../../context/BoardManagementContext";
-import { ListManagementProvider } from "../../context/ListManagementContext";
+import { NavProvider } from "../context/NavContext";
+import Navbar from "../components/Navbar";
+import { BoardManagementProvider } from "../context/BoardManagementContext";
+import { ListManagementProvider } from "../context/ListManagementContext";
+import { SidebarWorkspace } from "../components/SidebarWorkspace";
 
 const SidebarWorspaceData1 = [
   {

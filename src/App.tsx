@@ -19,7 +19,6 @@ import {
   BusinessDepartment,
   Support,
   GroupManagement,
-  Layout,
   WorkspaceBoard,
   WorkspaceMembers,
   BoardDetail,
@@ -29,10 +28,10 @@ import ProtectedRoute from "./components/ProtectdRoute";
 import { LoginProvider } from "./context/LoginContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ResetPasswordProvider } from "./context/ResetPasswordContext";
-import { LayoutWorkspace } from "./pages/layout_workspace";
-import { BoardManagementProvider } from "./context/BoardManagementContext";
 import { WorkspaceHeaderBar } from "./components/WorkspaceHeaderBar";
 import { NavBoard } from "./components/NavBoard";
+import { Layout } from "./layout/Layout";
+import { LayoutWorkspace } from "./layout/LayoutWorkspace";
 
 // const Home = React.lazy(() => import("./pages/"));
 

@@ -18,11 +18,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-
-export type Board = {
-  boardName: string;
-  id: string;
-};
+import { Board } from "../types/Board";
 
 type BoardManagementContextProps = {
   activeForm: string | null;

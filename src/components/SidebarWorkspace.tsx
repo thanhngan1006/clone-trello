@@ -8,10 +8,7 @@ import { FaEdit } from "react-icons/fa";
 
 import { AccountLinkList } from "./AccountLinkList";
 import { Button } from "./Button";
-import {
-  Board,
-  BoardManagementContext,
-} from "../context/BoardManagementContext";
+import { BoardManagementContext } from "../context/BoardManagementContext";
 import { CreateBoardForm } from "./CreateBoardForm";
 
 type SidebarWorspaceData = {

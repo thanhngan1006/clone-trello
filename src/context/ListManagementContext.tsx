@@ -2,51 +2,75 @@ import { db } from "../lib/firebase";
 import {
   collection,
   addDoc,
-  getDocs,
   doc,
-  updateDoc,
   deleteDoc,
-  getDoc,
+  getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import {
   createContext,
-  Dispatch,
   ReactNode,
-  SetStateAction,
   useCallback,
+  useContext,
   useState,
 } from "react";
-import { useParams } from "react-router-dom";
-
-export type List = {
-  listName: string;
-  listId: string;
-  boardId: string | undefined;
-};
+import { List } from "../types/List";
 
 type ListManagementContextProps = {
-  lists: List[];
   isOpen: boolean;
-  listName: string;
-  activeOpenTag: string | null;
-  tagName: string;
+  activeOpenCard: string | null;
   activeOptionButton: string | null;
   activeEditList: string | null;
-  newListName: string;
-  setListName: Dispatch<SetStateAction<string>>;
-  setTagName: Dispatch<SetStateAction<string>>;
-  setNewListName: Dispatch<SetStateAction<string>>;
-  handleOpenTag: (listId: string) => void;
+  setActiveEditList: React.Dispatch<React.SetStateAction<string | null>>;
+  handleOpenCard: (listId: string) => void;
   handleOpenForm: () => void;
   handleCloseForm: () => void;
-  handleAddList: (boardId: string | undefined) => void;
-  fetchLists: (boardId: string | undefined) => void;
+  handleAddList: ({
+    boardId,
+    listName,
+    onSuccess,
+    onError,
+  }: {
+    boardId: string | undefined;
+    listName: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
+  handleDeleleList: ({
+    listId,
+    onSuccess,
+    onError,
+  }: {
+    listId: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
   handleOpenOptionMenu: (listId: string) => void;
-  handleDeleleList: (listId: string) => void;
   handleCloseOptionMenu: () => void;
   handleOpenEditList: (listId: string) => void;
   handleCloseEditList: () => void;
-  handleUpdateList: (listId: string, listNameUpdate: string) => void;
+  handleAddCard: ({
+    listId,
+    cardName,
+    onSuccess,
+    onError,
+  }: {
+    listId?: string;
+    cardName: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
+  handleUpdateList: ({
+    listId,
+    listNameUpdate,
+    onSuccess,
+    onError,
+  }: {
+    listId: string;
+    listNameUpdate: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
 };
 
 export const ListManagementContext = createContext<
@@ -60,16 +84,55 @@ type ListManagementProviderProps = {
 export const ListManagementProvider = ({
   children,
 }: ListManagementProviderProps) => {
-  const [lists, setLists] = useState<List[]>([]);
-  const [listName, setListName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [activeOpenTag, setActiveOpenTag] = useState<string | null>(null);
-  const [tagName, setTagName] = useState("");
   const [activeOptionButton, setActiveOptionButton] = useState<string | null>(
     null
   );
   const [activeEditList, setActiveEditList] = useState<string | null>(null);
-  const [newListName, setNewListName] = useState("");
+  const [activeOpenCard, setActiveOpenCard] = useState<string | null>(null);
+
+  const handleOpenForm = useCallback(() => {
+    setIsOpen(true);
+  }, []);
+
+  const handleCloseForm = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const handleAddList = useCallback(
+    async ({
+      boardId,
+      listName,
+      onSuccess,
+      onError,
+    }: {
+      boardId: string | undefined;
+      listName: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
+      if (!boardId) {
+        console.error("Board ID is required");
+        return;
+      }
+
+      const newListData = { listName, boardId };
+
+      if (newListData.listName === "") {
+        setIsOpen(false);
+        return;
+      }
+      try {
+        const docRef = await addDoc(collection(db, "lists"), newListData);
+        onSuccess();
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        onError();
+      }
+    },
+    []
+  );
 
   const handleOpenEditList = useCallback(
     (listId: string) => {
@@ -82,20 +145,11 @@ export const ListManagementProvider = ({
     setActiveEditList(null);
   }, []);
 
-  const handleOpenForm = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
-  const handleCloseForm = useCallback(() => {
-    setListName("");
-    setIsOpen(false);
-  }, []);
-
-  const handleOpenTag = useCallback(
+  const handleOpenCard = useCallback(
     (listId: string) => {
-      setActiveOpenTag(activeOpenTag === listId ? null : listId);
+      setActiveOpenCard(activeOpenCard === listId ? null : listId);
     },
-    [activeOpenTag]
+    [activeOpenCard]
   );
 
   const handleOpenOptionMenu = useCallback(
@@ -109,79 +163,123 @@ export const ListManagementProvider = ({
     setActiveOptionButton(null);
   }, []);
 
-  const handleAddList = useCallback(
-    async (boardId: string | undefined) => {
-      if (!boardId) {
-        console.error("Board ID is required");
+  const handleDeleleList = useCallback(
+    async ({
+      listId,
+      onSuccess,
+      onError,
+    }: {
+      listId: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
+      if (!listId) {
+        console.error("List ID is required");
         return;
       }
 
-      const newListData = { listName, boardId };
+      // Lấy danh sách các card trong list
+      const cardSnapshot = await getDocs(collection(db, "cards"));
+      const cardsToDelete = cardSnapshot.docs.filter((doc) => {
+        const cardData = doc.data();
+        return cardData.listId === listId;
+      });
+
+      // Xóa tất cả các card
+      const deleteCardPromises = cardsToDelete.map((doc) => {
+        return deleteDoc(doc.ref); // Xóa từng card
+      });
+      await Promise.all(deleteCardPromises);
+
+      // Xóa list
+      const taskDocRef = doc(db, "lists", listId);
       try {
-        const docRef = await addDoc(collection(db, "lists"), newListData);
-        const newList = {
-          listName,
-          listId: docRef.id,
-          boardId,
-        };
-        setLists((prevList) => [...prevList, newList]);
-        setListName("");
-        setIsOpen(false);
-        console.log(boardId, "===", listName);
-      } catch (error) {
-        console.error("Error adding document: ", error);
+        await deleteDoc(taskDocRef);
+        onSuccess();
+      } catch (err) {
+        onError();
+        alert(err);
       }
     },
-    [listName]
+    []
   );
 
-  const fetchLists = useCallback(async (boardId: string | undefined) => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "lists"));
-      const newData: List[] = querySnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        listId: doc.id,
-      })) as List[];
-
-      const filteredLists = newData.filter((list) => list.boardId === boardId);
-      setLists(filteredLists);
-    } catch (error) {
-      console.error("Error fetching lists:", error);
-    }
-  }, []);
-
-  const handleDeleleList = useCallback(async (listId: string) => {
-    console.log("sdfasdf");
-    const taskDocRef = doc(db, "lists", listId);
-
-    try {
-      await deleteDoc(taskDocRef);
-      setLists((items) => items.filter((item) => item.listId !== listId));
-    } catch (err) {
-      alert(err);
-    }
-  }, []);
-
   const handleUpdateList = useCallback(
-    async (listId: string, listNameUpdate: string) => {
+    async ({
+      listId,
+      listNameUpdate,
+      onSuccess,
+      onError,
+    }: {
+      listId: string;
+      listNameUpdate: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
       const taskDocRef = doc(db, "lists", listId);
       try {
         await updateDoc(taskDocRef, {
           listName: listNameUpdate,
         });
-
-        setLists((prevList) =>
-          prevList.map((item) =>
-            item.listId === listId
-              ? { ...item, listName: listNameUpdate }
-              : item
-          )
-        );
-        setNewListName("");
-        setListName("");
-        setActiveEditList(null);
+        onSuccess();
       } catch (err) {
+        onError();
         alert(err);
+      }
+    },
+    []
+  );
+
+  // const handleUpdateList = useCallback(
+  //   async (listId: string, listNameUpdate: string) => {
+  //     const taskDocRef = doc(db, "lists", listId);
+  //     try {
+  //       await updateDoc(taskDocRef, {
+  //         listName: listNameUpdate,
+  //       });
+
+  //       setLists((prevList) =>
+  //         prevList.map((item) =>
+  //           item.listId === listId
+  //             ? { ...item, listName: listNameUpdate }
+  //             : item
+  //         )
+  //       );
+  //       setNewListName("");
+  //       setListName("");
+  //       setActiveEditList(null);
+  //     } catch (err) {
+  //       alert(err);
+  //     }
+  //   },
+  //   []
+  // );
+
+  const handleAddCard = useCallback(
+    async ({
+      listId,
+      cardName,
+      onSuccess,
+      onError,
+    }: {
+      listId?: string;
+      cardName: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
+      if (!listId) {
+        console.error("List ID is required");
+        return;
+      }
+
+      const newCardData = { cardName, listId };
+      try {
+        await addDoc(collection(db, "cards"), newCardData);
+        onSuccess();
+        setActiveOpenCard(null);
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        onError();
       }
     },
     []
@@ -190,18 +288,12 @@ export const ListManagementProvider = ({
   return (
     <ListManagementContext.Provider
       value={{
-        lists,
-        setListName,
-        listName,
         isOpen,
         handleOpenForm,
         handleCloseForm,
         handleAddList,
-        activeOpenTag,
-        handleOpenTag,
-        tagName,
-        setTagName,
-        fetchLists,
+        activeOpenCard,
+        handleOpenCard,
         activeOptionButton,
         handleOpenOptionMenu,
         handleDeleleList,
@@ -209,12 +301,16 @@ export const ListManagementProvider = ({
         activeEditList,
         handleOpenEditList,
         handleCloseEditList,
-        setNewListName,
-        newListName,
         handleUpdateList,
+        handleAddCard,
+        setActiveEditList,
       }}
     >
       {children}
     </ListManagementContext.Provider>
   );
+};
+
+export const useListManagementContext = () => {
+  return useContext(ListManagementContext);
 };

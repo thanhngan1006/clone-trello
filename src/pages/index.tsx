@@ -1,6 +1,5 @@
 export { Home } from "./home_page";
 export { Login } from "./login_page";
-export { Layout } from "./layout";
 export { ResetPassword } from "./reset_password_page";
 export { NoPage } from "./no_page";
 

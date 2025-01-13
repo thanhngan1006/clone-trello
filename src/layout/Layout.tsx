@@ -5,10 +5,10 @@ import { MdOutlineGroup } from "react-icons/md";
 import { IoIosSettings } from "react-icons/io";
 
 import { Outlet } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import { NavProvider } from "../../context/NavContext";
-import { Sidebar } from "../../components/Sidebar";
-import { Footer } from "../../components/Footer";
+import { Sidebar } from "../components/Sidebar";
+import { NavProvider } from "../context/NavContext";
+import Navbar from "../components/Navbar";
+import { Footer } from "./Footer";
 
 const dataSampleSidebar = [
   {
