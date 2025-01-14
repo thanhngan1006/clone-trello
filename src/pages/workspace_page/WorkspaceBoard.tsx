@@ -1,18 +1,12 @@
 import { FaAngleDown } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
-import { TiTickOutline } from "react-icons/ti";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
-import { FaDeleteLeft } from "react-icons/fa6";
 
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Button } from "../../components/Button";
 import { CreateBoardForm } from "../../components/CreateBoardForm";
-import {
-  Board,
-  BoardManagementContext,
-} from "../../context/BoardManagementContext";
-import { Link } from "react-router-dom";
+import { BoardManagementContext } from "../../context/BoardManagementContext";
+import { Board } from "../../types/Board";
+import { TaskBoardList } from "./TaskBoardList";
 
 export const WorkspaceBoard = () => {
   const context = useContext(BoardManagementContext);
@@ -26,18 +20,10 @@ export const WorkspaceBoard = () => {
     activeForm,
     handleOpenFormToAddBoard,
     listBoard,
-    handleDeleteBoard,
-    activeEdit,
-    handleOpenEdit,
-    handleCloseEdit,
-    newBoardName,
-    setNewBoardName,
-    handleUpdateBoard,
     setSortBy,
     sortBy,
     searchWord,
     setSearchWord,
-    navigateToBoardFunction,
   } = context;
 
   const [filteredAndSortedBoards, setFilteredAndSortedBoards] = useState<
@@ -200,70 +186,8 @@ export const WorkspaceBoard = () => {
           <CreateBoardForm className="absolute top-full mt-10" />
         )}
       </div>
-      <ul className="flex gap-2 flex-wrap">
-        {filteredAndSortedBoards.map((item) => (
-          <li key={item.id}>
-            <button
-              onClick={() => navigateToBoardFunction(item)}
-              className="flex justify-between px-3 p-2 border border-gray-300 rounded-md w-56 h-28"
-            >
-              {activeEdit === item.id ? (
-                <input
-                  name="boardTitle"
-                  type="text"
-                  className="text-sm border border-gray-300 rounded-sm pr-2 py-2 w-full"
-                  placeholder="Vui lòng điền tên bảng"
-                  value={newBoardName}
-                  onChange={(e) => setNewBoardName(e.target.value)}
-                  required
-                />
-              ) : (
-                <span className="font-bold">{item.boardName}</span>
-              )}
 
-              <div className="flex items-center gap-2">
-                {activeEdit === item.id ? (
-                  <>
-                    <Button
-                      className="w-auto"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleUpdateBoard(item.id, newBoardName, e);
-                      }}
-                    >
-                      <TiTickOutline />
-                    </Button>
-                    <Button
-                      className="w-auto"
-                      onClick={() => handleCloseEdit()}
-                    >
-                      <FaDeleteLeft />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      className="w-auto"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleOpenEdit(item.id, e);
-                      }}
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      className="w-auto"
-                      onClick={(e) => handleDeleteBoard(item.id, e)}
-                    >
-                      <FaRegTrashAlt />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <TaskBoardList filteredAndSortedBoards={filteredAndSortedBoards} />
     </div>
   );
 };

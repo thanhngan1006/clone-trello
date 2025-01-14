@@ -2,12 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Card } from "../types/Card";
 import { Button } from "./Button";
-import {
-  FaEdit,
-  FaRegTimesCircle,
-  FaRegTrashAlt,
-  FaSave,
-} from "react-icons/fa";
+import { FaEdit, FaRegTrashAlt } from "react-icons/fa";
 import { ListManagementContext } from "../context/ListManagementContext";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
