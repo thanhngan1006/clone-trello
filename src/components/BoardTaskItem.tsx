@@ -181,7 +181,7 @@ export const BoardTaskItem = ({
         )}
       </div>
 
-      <TaskCardList listCard={listCard} />
+      <TaskCardList listCard={listCard} setListCard={setListCard} />
 
       {/* nhan nut add card */}
       {activeOpenCard === data.listId ? (

@@ -22,6 +22,7 @@ type ListManagementContextProps = {
   activeOptionButton: string | null;
   activeEditList: string | null;
   setActiveEditList: React.Dispatch<React.SetStateAction<string | null>>;
+  setActiveOpenCard: React.Dispatch<React.SetStateAction<string | null>>;
   handleOpenCard: (listId: string) => void;
   handleOpenForm: () => void;
   handleCloseForm: () => void;
@@ -71,6 +72,26 @@ type ListManagementContextProps = {
     onSuccess: () => void;
     onError: () => void;
   }) => void;
+  handleDeleteCard: ({
+    cardId,
+    onSuccess,
+    onError,
+  }: {
+    cardId: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
+  handleUpdateCard: ({
+    cardId,
+    cardNameUpdate,
+    onSuccess,
+    onError,
+  }: {
+    cardId: string;
+    cardNameUpdate: string;
+    onSuccess: () => void;
+    onError: () => void;
+  }) => void;
 };
 
 export const ListManagementContext = createContext<
@@ -97,6 +118,35 @@ export const ListManagementProvider = ({
 
   const handleCloseForm = useCallback(() => {
     setIsOpen(false);
+  }, []);
+
+  const handleOpenEditList = useCallback(
+    (listId: string) => {
+      setActiveEditList(activeEditList === listId ? null : listId);
+    },
+    [activeEditList]
+  );
+
+  const handleCloseEditList = useCallback(() => {
+    setActiveEditList(null);
+  }, []);
+
+  const handleOpenCard = useCallback(
+    (listId: string) => {
+      setActiveOpenCard(activeOpenCard === listId ? null : listId);
+    },
+    [activeOpenCard]
+  );
+
+  const handleOpenOptionMenu = useCallback(
+    (listId: string) => {
+      setActiveOptionButton(activeOptionButton === listId ? null : listId);
+    },
+    [activeOptionButton]
+  );
+
+  const handleCloseOptionMenu = useCallback(() => {
+    setActiveOptionButton(null);
   }, []);
 
   const handleAddList = useCallback(
@@ -133,35 +183,6 @@ export const ListManagementProvider = ({
     },
     []
   );
-
-  const handleOpenEditList = useCallback(
-    (listId: string) => {
-      setActiveEditList(activeEditList === listId ? null : listId);
-    },
-    [activeEditList]
-  );
-
-  const handleCloseEditList = useCallback(() => {
-    setActiveEditList(null);
-  }, []);
-
-  const handleOpenCard = useCallback(
-    (listId: string) => {
-      setActiveOpenCard(activeOpenCard === listId ? null : listId);
-    },
-    [activeOpenCard]
-  );
-
-  const handleOpenOptionMenu = useCallback(
-    (listId: string) => {
-      setActiveOptionButton(activeOptionButton === listId ? null : listId);
-    },
-    [activeOptionButton]
-  );
-
-  const handleCloseOptionMenu = useCallback(() => {
-    setActiveOptionButton(null);
-  }, []);
 
   const handleDeleleList = useCallback(
     async ({
@@ -285,6 +306,52 @@ export const ListManagementProvider = ({
     []
   );
 
+  const handleDeleteCard = useCallback(
+    async ({
+      cardId,
+      onSuccess,
+      onError,
+    }: {
+      cardId: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
+      const taskDocRef = await doc(db, "cards", cardId);
+      try {
+        await deleteDoc(taskDocRef);
+        onSuccess();
+      } catch (err) {
+        onError();
+        alert(err);
+      }
+    },
+    []
+  );
+
+  const handleUpdateCard = useCallback(
+    async ({
+      cardId,
+      cardNameUpdate,
+      onSuccess,
+      onError,
+    }: {
+      cardId: string;
+      cardNameUpdate: string;
+      onSuccess: () => void;
+      onError: () => void;
+    }) => {
+      const taskDocRef = doc(db, "cards", cardId);
+      try {
+        await updateDoc(taskDocRef, { cardName: cardNameUpdate });
+        onSuccess();
+      } catch (err) {
+        onError();
+        alert(err);
+      }
+    },
+    []
+  );
+
   return (
     <ListManagementContext.Provider
       value={{
@@ -304,6 +371,9 @@ export const ListManagementProvider = ({
         handleUpdateList,
         handleAddCard,
         setActiveEditList,
+        handleDeleteCard,
+        setActiveOpenCard,
+        handleUpdateCard,
       }}
     >
       {children}

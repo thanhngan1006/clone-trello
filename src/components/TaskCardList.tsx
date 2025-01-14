@@ -5,13 +5,14 @@ import { TaskCard } from "./TaskCard";
 
 type Props = {
   listCard: Card[];
+  setListCard: React.Dispatch<React.SetStateAction<Card[]>>;
 };
 
-export const TaskCardList = ({ listCard }: Props) => {
+export const TaskCardList = ({ listCard, setListCard }: Props) => {
   return (
     <ul className="flex flex-col gap-3">
       {listCard?.map((card) => (
-        <TaskCard card={card} />
+        <TaskCard card={card} setListCard={setListCard} />
       ))}
     </ul>
   );
